@@ -1,0 +1,19 @@
+{
+  "name": "@kingsuper195/termrender",
+  "version": "1.0.1",
+  "description": "Render images to your terminal!",
+  "license": "MIT",
+  "author": "Kingsuper195",
+  "type": "module",
+  "bin": "index.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ."
+  },
+  "dependencies": {
+    "@jimp/utils": "^1.6.0",
+    "chalk": "^5.5.0",
+    "commander": "^14.0.0",
+    "jimp": "^1.6.0"
+  }
+}
