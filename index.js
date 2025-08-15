@@ -10,7 +10,7 @@ program
     .option("-w --calcw", "Calculate image size with width.", false)
     .option("-h --calch", "Calculate image size with height.", true)
     .option("-p --pixel", "Render with pixel size.", false)
-    .argument("file <string>", "File to render.");
+    .argument("<string>", "File to render.");
 program.parse();
 const options = program.opts();
 const file = program.args[0];
