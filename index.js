@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
-import { Jimp } from "jimp";
-import { intToRGBA } from "@jimp/utils";
+import sharp from "sharp";
 import { program } from "commander";
 import chalk from 'chalk';
 
@@ -19,50 +18,71 @@ const file = program.args[0];
 
 async function main() {
     let image;
-    try {
-        image = await Jimp.read(file);
-    } catch (error) {
-        return;
-    }
     if (options.calcw) {
         options.calch = false;
     }
     if (options.pixel) {
+        let imageArr;
         if (options.calch) {
             let h = (2 * Math.round(process.stdout.rows) - 4) / 2;
-            image.resize({ h });
+            let buffer = await (sharp(file).resize({ height: h }).raw().toBuffer({ resolveWithObject: true }));
+            image = buffer.info;
+            imageArr = [...buffer.data];
         } else if (options.calcw) {
             let w = ((2 * Math.round(process.stdout.columns) - 2) / 2) / 2;
-            image.resize({ w });
+            let buffer = await (sharp(file).resize({ width: w }).raw().toBuffer({ resolveWithObject: true }));
+            image = buffer.info;
+            imageArr = [...buffer.data]
         }
+
+        let RGBArr = [];
+        for (let i = 0; i < imageArr.length; i += image.channels) {
+            let three = [imageArr[i], imageArr[i + 1], imageArr[i + 2]];
+            RGBArr.push(three);
+        }
+
+        let imgTotal = [];
+
         for (let y = 0; y < image.height; y++) {
             let pixArray = [];
             for (let x = 0; x < image.width; x++) {
-                let v = intToRGBA(image.getPixelColor(x, y));
-                pixArray.push(chalk.bgRgb(v.r, v.g, v.b)("  "));
+                let v = RGBArr[x + (y * image.width)];
+                pixArray.push(chalk.bgRgb(v[0], v[1], v[2])("  "));
             }
-            console.log(pixArray.join(''));
+            imgTotal.push(pixArray.join(''));
         }
+        console.log(imgTotal.join('\n'));
     } else {
+        let imageArr
         if (options.calch) {
             let h = 2 * Math.round(process.stdout.rows) - 4;
-            image.resize({ h: h });
+            let buffer = await (sharp(file).resize({ height: h }).raw().toBuffer({ resolveWithObject: true }));
+            image = buffer.info;
+            imageArr = [...buffer.data];
         } else if (options.calcw) {
             let w = (2 * Math.round(process.stdout.columns) - 2) / 2;
-            image.resize({ w: w });
+            let buffer = await (sharp(file).resize({ width: w }).raw().toBuffer({ resolveWithObject: true }));
+            image = buffer.info;
+            imageArr = [...buffer.data];
+        }
+        console.log(image);
+        let RGBArr = [];
+        for (let i = 0; i < imageArr.length; i += image.channels) {
+            let three = [imageArr[i], imageArr[i + 1], imageArr[i + 2]];
+            RGBArr.push(three);
         }
 
-
-
+        let imgTotal = [];
         for (let y = 0; y < image.height; y += 2) {
             let pixArray = [];
             for (let x = 0; x < image.width; x++) {
-                let v = intToRGBA(image.getPixelColor(x, y));
-                let v2 = intToRGBA(image.getPixelColor(x, y + 1));
-                pixArray.push(chalk.bgRgb(v.r, v.g, v.b).rgb(v2.r, v2.g, v2.b)("▄"));
+                let v = RGBArr[x + (y * image.width)];
+                let v2 = RGBArr[x + ((y + 1) * image.width)];
+                pixArray.push(chalk.bgRgb(v[0], v[1], v[2]).rgb(v2[0], v2[1], v2[2])("▄"));
             }
-            console.log(pixArray.join(''));
+            imgTotal.push(pixArray.join(''));
         }
+        console.log(imgTotal.join('\n'));
     }
 
 }
